@@ -1,0 +1,47 @@
+#!/usr/bin/sh
+################### Script header ##############################
+# Script Name           : ErroneousCDR_Processing.sh            #
+# Description           : Script for erroneous CDR Processing   #
+# Date                  : 29-Oct-2014                           #
+# Author                : Tania Bagga (Ericsson)                #
+# Reviewer              : Sanuj Kamboj, Amit Pal, Brijesh Gupta (Ericsson)     #
+# Version               : v1 (29th Oct 2014)                    #
+################################################################
+
+
+temp_date=`date`
+curdate=`date +"%d%m%y"`
+
+sudo /usr/bin/mkdir -p /var/DWS/erroneous/CS40/CCN_USAGE_64K/check_err
+
+sudo /usr/bin/mkdir -p /var/DWS/erroneous/CS40/CCN_USAGE_64K/check_log
+
+sudo /usr/bin/mkdir -p /var/DWS/check_ccn
+
+find /var/DWS/erroneous/CS40/CCN_USAGE_64K/ -mtime -1 -type f -name "*.ccn" -exec sudo /usr/bin/cp {} /var/DWS/check_ccn \;
+
+find /var/DWS/erroneous/CS40/CCN_USAGE_64K/ -mtime -1 -type f -name "*.ccn" -exec sudo /usr/bin/mv {} /var/DWS/incoming/CS40/CCN_USAGE_64K \;
+
+find /var/DWS/erroneous/CS40/CCN_USAGE_64K/ -mtime -1 -type f -name "*.ccn.err" -exec sudo /usr/bin/mv {} /var/DWS/erroneous/CS40/CCN_USAGE_64K/check_err \;
+
+find /var/DWS/erroneous/CS40/CCN_USAGE_64K/ -mtime -1 -type f -name "*.ccn.log" -exec sudo /usr/bin/mv {} /var/DWS/erroneous/CS40/CCN_USAGE_64K/check_log \;
+
+find /var/DWS/erroneous/CS40/CCN_USAGE_64K/ -mtime -1 -type f -name "*.ccn.bad" -exec sudo /usr/bin/rm -f {} \;
+
+# Removing 30 days old err and log files
+
+find /var/DWS/erroneous/CS40/CCN_USAGE_64K/check_err/ -mtime +30 -type f -name "*.ccn.err" -exec sudo /usr/bin/rm -f {} \;
+
+find /var/DWS/erroneous/CS40/CCN_USAGE_64K/check_log/ -mtime +30 -type f -name "*.ccn.log" -exec sudo /usr/bin/rm -f {} \;
+
+# Removing 7 days old ccn erroneous files
+
+find /var/DWS/check_ccn/ -mtime +7 -type f -name "*.ccn" -exec sudo /usr/bin/rm -f {} \;
+
+# Mail the current err files for further investigation to team
+
+#subject='CRS Stuck CDR Processing'${temp_date}
+
+#find /var/DWS/erroneous/CS40/CCN_USAGE_64K/check_err/ -mtime -1 -type f -name "*.ccn.err" -exec ls {} \; > /var/DWS/erroneous/CS40/CCN_USAGE_64K/tester1.err
+
+#cat /var/DWS/erroneous/CS40/CCN_USAGE_64K/tester1.err | mailx -m -s "$subject" `cat /var/DWS/erroneous/CS40/CCN_USAGE_64K/email1_test.list`
